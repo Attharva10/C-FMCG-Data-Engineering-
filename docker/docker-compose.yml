@@ -1,0 +1,204 @@
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: fmcg-zookeeper
+
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+    ports:
+      - "2181:2181"
+
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: fmcg-kafka
+
+    depends_on:
+      - zookeeper
+
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+
+  namenode:
+    image: apache/hadoop:3
+    container_name: fmcg-namenode
+    hostname: namenode
+    user: root
+
+    ports:
+      - "9870:9870"
+      - "8020:8020"
+
+    volumes:
+      - namenode_data:/opt/hadoop/data
+      - ./hadoop-conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./hadoop-conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+
+    command: >
+      bash -c "
+        mkdir -p /opt/hadoop/data/name;
+        if [ ! -f /opt/hadoop/data/name/current/VERSION ]; then
+          hdfs namenode -format -force;
+        fi;
+        exec hdfs namenode
+      "
+
+
+  datanode:
+    image: apache/hadoop:3
+    container_name: fmcg-datanode
+    hostname: datanode
+    user: root
+
+    depends_on:
+      - namenode
+
+    ports:
+      - "9864:9864"
+
+    volumes:
+      - datanode_data:/opt/hadoop/data
+      - ./hadoop-conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./hadoop-conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+
+    command:
+      - hdfs
+      - datanode
+
+
+  spark:
+    image: apache/spark:3.5.9-scala2.12-java11-python3-r-ubuntu
+    container_name: fmcg-spark
+    user: root
+
+    depends_on:
+      - namenode
+      - datanode
+
+    volumes:
+      - ../spark/jobs:/opt/spark/jobs
+      - ./hadoop-conf/core-site.xml:/opt/spark/conf/core-site.xml
+      - ./hadoop-conf/hdfs-site.xml:/opt/spark/conf/hdfs-site.xml
+
+    environment:
+      SPARK_LOCAL_IP: spark
+
+    command:
+      - tail
+      - -f
+      - /dev/null
+
+
+  hive:
+    image: apache/hive:4.2.1
+    container_name: fmcg-hive
+
+    depends_on:
+      - namenode
+      - datanode
+
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+
+    environment:
+      SERVICE_NAME: hiveserver2
+      IS_RESUME: "false"
+
+    volumes:
+      - ./hadoop-conf/core-site.xml:/opt/hive/conf/core-site.xml
+      - ./hadoop-conf/hdfs-site.xml:/opt/hive/conf/hdfs-site.xml
+      - ./hadoop-conf/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - hive_data:/opt/hive/data
+
+
+  airflow:
+    image: apache/airflow:2.10.5
+    container_name: fmcg-airflow
+    restart: unless-stopped
+
+    depends_on:
+      - namenode
+      - spark
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+
+    volumes:
+      - ../airflow:/opt/airflow
+      - ../spark/jobs:/opt/spark/jobs
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow webserver
+      "
+
+
+  airflow-scheduler:
+    image: apache/airflow:2.10.5
+    container_name: fmcg-airflow-scheduler
+    restart: unless-stopped
+
+    depends_on:
+      - namenode
+      - spark
+
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+
+    volumes:
+      - ../airflow:/opt/airflow
+      - ../spark/jobs:/opt/spark/jobs
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow scheduler
+      "
+
+
+volumes:
+
+  namenode_data:
+    name: docker_namenode_data
+
+  datanode_data:
+    name: docker_datanode_data
+
+  hive_data:
+    name: docker_hive_data
+    
+  airflow_data:
+    name: docker_airflow_data

@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 # FMCG Global Sales Data Engineering Pipeline
 
 ## 📌 Project Overview
@@ -67,10 +68,56 @@ The analysis includes:
 - Country-level sales comparison
 
 ## ✅ Data Quality Results
+=======
+# FMCG Global Sales Data Engineering Project
+
+## Project Overview
+
+This project implements a containerized data engineering pipeline for processing and analyzing FMCG global sales data.
+
+The pipeline ingests sales transactions through Apache Kafka, stores raw data in HDFS, processes data using Apache Spark, and performs analytics using Apache Hive.
+
+## Technologies Used
+
+- Apache Kafka – Data ingestion
+- HDFS – Distributed data storage
+- Apache Spark / PySpark – ETL and data processing
+- Apache Hive – SQL analytics
+- Apache Airflow – Workflow orchestration
+- Docker – Containerization
+- Python – Data engineering scripts
+
+## Architecture
+
+CSV Dataset → Kafka → HDFS → Spark ETL → Parquet → Hive → Analytics
+
+Apache Airflow orchestrates the pipeline workflow.
+
+## Dataset
+
+- Approximately 1.1 million sales transactions
+- 102 unique products
+- 13 stores
+- Multiple countries
+
+## Pipeline Workflow
+
+1. Read sales data from CSV.
+2. Publish records to Apache Kafka.
+3. Consume Kafka messages and store raw data in HDFS.
+4. Process data using Apache Spark.
+5. Store processed data in Parquet format.
+6. Load processed data into Apache Hive.
+7. Execute country-level sales analytics.
+8. Orchestrate the workflow using Apache Airflow.
+
+## Data Quality Results
+>>>>>>> d32a1c5 (Initial FMCG data engineering pipeline)
 
 | Check | Result |
 |---|---|
 | Total records | 1,100,000 |
+<<<<<<< HEAD
 | NULL values in important columns | 0 |
 | Duplicate records | 0 |
 | Negative net sales | 0 |
@@ -81,6 +128,21 @@ The analysis includes:
 
 ```text
 FMCG-Data-Engineering/
+=======
+| Null dates | 0 |
+| Null store IDs | 0 |
+| Null SKU IDs | 0 |
+| Null units sold | 0 |
+| Null net sales | 0 |
+| Duplicate records | 0 |
+| Negative net sales | 0 |
+| Negative units sold | 0 |
+
+## Project Structure
+
+```text
+C-FMCG-Data-Engineering/
+>>>>>>> d32a1c5 (Initial FMCG data engineering pipeline)
 ├── airflow/
 ├── Data/
 ├── docker/
@@ -93,6 +155,7 @@ FMCG-Data-Engineering/
 └── README.md
 ```
 
+<<<<<<< HEAD
 ## 🚀 Key Features
 
 - Distributed data storage using HDFS
@@ -118,3 +181,24 @@ FMCG-Data-Engineering/
 **Atharv Umate**
 
 Aspiring Data Engineer | Big Data Analytics
+=======
+## Key Outcomes
+
+- Processed approximately 1.1 million sales records.
+- Stored raw and processed data in HDFS.
+- Used Spark for ETL and Parquet generation.
+- Performed analytics using Hive SQL.
+- Automated the pipeline using Apache Airflow.
+- Completed data quality validation successfully.
+
+## Future Enhancements
+
+- Add real-time monitoring dashboards.
+- Integrate Tableau or Power BI.
+- Add automated data quality tasks to Airflow.
+- Deploy the pipeline on cloud infrastructure.
+
+## Author
+
+Atharv Umate
+>>>>>>> d32a1c5 (Initial FMCG data engineering pipeline)
