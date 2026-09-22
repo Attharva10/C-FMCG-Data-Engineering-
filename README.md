@@ -1,4 +1,4 @@
-@'
+
 # FMCG Global Sales Data Engineering Pipeline
 
 ## 📌 Project Overview
