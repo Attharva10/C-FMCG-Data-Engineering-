@@ -16,7 +16,8 @@ print(f"Total records: {df.count():,}")
 
 # 2. Null checks
 print("\nNULL VALUE CHECK:")
- for column in ["sale_date", "store_id", "sku_id", "units_sold", "net_sales"]:
+
+for column in ["sale_date", "store_id", "sku_id", "units_sold", "net_sales"]:
     count = df.filter(col(column).isNull()).count()
     print(f"{column}: {count}")
 
@@ -29,10 +30,10 @@ print(f"\nDuplicate records: {total_rows - distinct_rows:,}")
 negative_sales = df.filter(col("net_sales") < 0).count()
 invalid_units = df.filter(col("units_sold") < 0).count()
 
-print(f"Negative net sales: {negative_sales:,}")
-print(f"Negative units sold: {invalid_units:,}")
+print(f"Negative sales records: {negative_sales}")
+print(f"Negative units records: {invalid_units}")
 
-print("\n" + "=" * 60)
+print("=" * 60)
 print("DATA QUALITY CHECK COMPLETE")
 print("=" * 60)
 
