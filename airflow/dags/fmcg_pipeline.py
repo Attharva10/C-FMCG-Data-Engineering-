@@ -62,6 +62,29 @@ with DAG(
         network_mode="docker_default",
     )
 
+    data_quality_check = DockerOperator(
+        task_id="data_quality_check",
+        image="docker:cli",
+        command=[
+            "docker",
+            "exec",
+            "fmcg-spark",
+            "/opt/spark/bin/spark-submit",
+            "/opt/spark/jobs/data_quality_check.py",
+        ],
+        docker_url="unix://var/run/docker.sock",
+        mounts=[
+            Mount(
+                source="/var/run/docker.sock",
+                target="/var/run/docker.sock",
+                type="bind",
+            )
+        ],
+        auto_remove="success",
+        mount_tmp_dir=False,
+        network_mode="docker_default",
+    )
+
     hive_analytics = DockerOperator(
         task_id="hive_analytics",
         image="docker:cli",
@@ -99,4 +122,4 @@ with DAG(
         task_id="end"
     )
 
-    start >> kafka_ingestion >> spark_etl >> hive_analytics >> end
+    start >> kafka_ingestion >> spark_etl >> data_quality_check >> hive_analytics >> end

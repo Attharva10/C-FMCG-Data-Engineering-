@@ -16,7 +16,7 @@ print(f"Total records: {df.count():,}")
 
 # 2. Null checks
 print("\nNULL VALUE CHECK:")
-for column in ["date", "store_id", "sku_id", "units_sold", "net_sales"]:
+ for column in ["sale_date", "store_id", "sku_id", "units_sold", "net_sales"]:
     count = df.filter(col(column).isNull()).count()
     print(f"{column}: {count}")
 

@@ -186,7 +186,7 @@ sales_enriched = sales_enriched.join(
 # =========================================================
 
 sales_final = sales_enriched.select(
-    "date",
+    col("date").alias("sale_date"),
     "store_id",
     "country",
     "city",
